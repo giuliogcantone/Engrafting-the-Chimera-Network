@@ -1,0 +1,18 @@
+---
+title: "README"
+author: "Giulio G. Cantone"
+date: "5/4/2022"
+output: github_document
+---
+
+This is a guide for the generating a network from a mixture of multy-layers.
+
+```{r setup message=FALSE, warning=FALSE, paged.print=FALSE}
+pacman::p_load(tidyverse,tidygraph)
+```
+
+```{r}
+tidygraph::create_ring(10) -> a
+a %>% plot()
+```
+

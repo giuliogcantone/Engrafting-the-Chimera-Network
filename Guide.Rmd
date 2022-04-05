@@ -1,8 +1,0 @@
----
-title: "README"
-author: "Giulio G. Cantone"
-date: "5/4/2022"
-output: html_document
----
-
-This is a guide for the generating a network from a mixture of multy-layers.
