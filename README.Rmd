@@ -51,6 +51,7 @@ g1
 
 g1 %>% plot()
 ```
+
 ## Stochastic graphs have a random distributions of edges, following a model.
 
 So, if you randomly generate them, you need to set a "seed" to see always the same outcome. If you don't, there will be a different output each time.
