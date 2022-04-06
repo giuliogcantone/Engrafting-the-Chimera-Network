@@ -22,85 +22,15 @@ ignore this section.
 pacman::p_install("tidyverse")
 ```
 
-    ## Installazione pacchetto in 'C:/Users/prgca/Documents/R/win-library/4.1'
-    ## (perché 'lib' non è specificato)
-
-    ## Warning: unable to access index for repository http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.1:
-    ##   non è possibile aprire URL 'http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.1/PACKAGES'
-
-    ## package 'tidyverse' successfully unpacked and MD5 sums checked
-    ## 
-    ## The downloaded binary packages are in
-    ##  C:\Users\prgca\AppData\Local\Temp\RtmpgVqYLp\downloaded_packages
-
-    ## 
-    ## tidyverse installed
-
 ### Tidygraph is a syntax for networks manipulation that is inspired by tidyverse. It is built on igraph, and some operations could still be performed on igraph.
 
 ``` r
 pacman::p_install("igraph")
 ```
 
-    ## Installazione pacchetto in 'C:/Users/prgca/Documents/R/win-library/4.1'
-    ## (perché 'lib' non è specificato)
-
-    ## Warning: unable to access index for repository http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.1:
-    ##   non è possibile aprire URL 'http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.1/PACKAGES'
-
-    ## package 'igraph' successfully unpacked and MD5 sums checked
-
-    ## Warning: cannot remove prior installation of package 'igraph'
-
-    ## Warning in file.copy(savedcopy, lib, recursive = TRUE):
-    ## problema durante la copia di C:\Users\prgca\Documents\R\win-
-    ## library\4.1\00LOCK\igraph\libs\x64\igraph.dll in C:\Users\prgca\Documents\R\win-
-    ## library\4.1\igraph\libs\x64\igraph.dll: Permission denied
-
-    ## Warning: restored 'igraph'
-
-    ## 
-    ## The downloaded binary packages are in
-    ##  C:\Users\prgca\AppData\Local\Temp\RtmpgVqYLp\downloaded_packages
-
-    ## 
-    ## igraph installed
-
 ``` r
 pacman::p_install("tidygraph")
 ```
-
-    ## Installazione pacchetto in 'C:/Users/prgca/Documents/R/win-library/4.1'
-    ## (perché 'lib' non è specificato)
-
-    ## Warning: unable to access index for repository http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.1:
-    ##   non è possibile aprire URL 'http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.1/PACKAGES'
-
-    ## 
-    ##   C'è una versione binaria disponibile, ma la versione con le sorgenti
-    ##   è successiva:
-    ##           binary source needs_compilation
-    ## tidygraph  1.2.0  1.2.1              TRUE
-    ## 
-    ##   Binaries will be installed
-    ## package 'tidygraph' successfully unpacked and MD5 sums checked
-
-    ## Warning: cannot remove prior installation of package 'tidygraph'
-
-    ## Warning in file.copy(savedcopy, lib, recursive = TRUE):
-    ## problema durante la copia di C:\Users\prgca\Documents\R\win-
-    ## library\4.1\00LOCK\tidygraph\libs\x64\tidygraph.dll in C:
-    ## \Users\prgca\Documents\R\win-library\4.1\tidygraph\libs\x64\tidygraph.dll:
-    ## Permission denied
-
-    ## Warning: restored 'tidygraph'
-
-    ## 
-    ## The downloaded binary packages are in
-    ##  C:\Users\prgca\AppData\Local\Temp\RtmpgVqYLp\downloaded_packages
-
-    ## 
-    ## tidygraph installed
 
 # How to generate deterministic or stochastics graphs with igraph and tidygraph
 
@@ -120,15 +50,21 @@ igraph::make_full_graph(10, directed = FALSE) -> g1
 g1
 ```
 
-    ## IGRAPH 271f134 U--- 10 45 -- Full graph
+    ## IGRAPH 52d69e0 U--- 10 45 -- Full graph
     ## + attr: name (g/c), loops (g/l)
-    ## + edges from 271f134:
+    ## + edges from 52d69e0:
     ##  [1] 1-- 2 1-- 3 1-- 4 1-- 5 1-- 6 1-- 7 1-- 8 1-- 9 1--10 2-- 3 2-- 4 2-- 5
     ## [13] 2-- 6 2-- 7 2-- 8 2-- 9 2--10 3-- 4 3-- 5 3-- 6 3-- 7 3-- 8 3-- 9 3--10
     ## [25] 4-- 5 4-- 6 4-- 7 4-- 8 4-- 9 4--10 5-- 6 5-- 7 5-- 8 5-- 9 5--10 6-- 7
     ## [37] 6-- 8 6-- 9 6--10 7-- 8 7-- 9 7--10 8-- 9 8--10 9--10
 
-## Stochastic graphs have a random distributions of edges, following a model.
+``` r
+g1 %>% plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- --> \#\#
+Stochastic graphs have a random distributions of edges, following a
+model.
 
 So, if you randomly generate them, you need to set a “seed” to see
 always the same outcome. If you don’t, there will be a different output
@@ -140,10 +76,16 @@ igraph::random.graph.game(10, p.or.m = .2, directed = FALSE) -> g2
 g2
 ```
 
-    ## IGRAPH 272294b U--- 10 10 -- Erdos renyi (gnp) graph
+    ## IGRAPH 52e1adb U--- 10 10 -- Erdos renyi (gnp) graph
     ## + attr: name (g/c), type (g/c), loops (g/l), p (g/n)
-    ## + edges from 272294b:
+    ## + edges from 52e1adb:
     ##  [1] 3-- 4 5-- 7 1-- 9 2-- 9 3-- 9 5-- 9 8-- 9 2--10 7--10 9--10
+
+``` r
+g2 %>% plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 # If you, like me, don’t like the igraph format, tidygraph will help you
 
@@ -153,6 +95,25 @@ the verb `create_`:
 
 ``` r
 tidygraph::create_complete(10) -> g1
+g1
+```
+
+    ## # A tbl_graph: 10 nodes and 45 edges
+    ## #
+    ## # An undirected simple graph with 1 component
+    ## #
+    ## # Node Data: 10 x 0 (active)
+    ## # ... with 4 more rows
+    ## #
+    ## # Edge Data: 45 x 2
+    ##    from    to
+    ##   <int> <int>
+    ## 1     1     2
+    ## 2     1     3
+    ## 3     1     4
+    ## # ... with 42 more rows
+
+``` r
 g1
 ```
 
@@ -216,5 +177,108 @@ will change to.
 ## Mutate within tidygraph!
 
 Don’t you think that those nodes are a bit hard to recognize?
+
+Tidygraph makes very easy to manipulate attributes in networks:
+
+``` r
+set.seed(999)
+g1 %>%
+  mutate(
+    id =
+      cur_group_rows(),
+    color = sample(
+    c("red", "blue"),
+    n(),
+    replace = T)
+    ) -> g1
+g1
+```
+
+    ## # A tbl_graph: 10 nodes and 45 edges
+    ## #
+    ## # An undirected simple graph with 1 component
+    ## #
+    ## # Node Data: 10 x 2 (active)
+    ##      id color
+    ##   <int> <chr>
+    ## 1     1 red  
+    ## 2     2 blue 
+    ## 3     3 red  
+    ## 4     4 red  
+    ## 5     5 red  
+    ## 6     6 blue 
+    ## # ... with 4 more rows
+    ## #
+    ## # Edge Data: 45 x 2
+    ##    from    to
+    ##   <int> <int>
+    ## 1     1     2
+    ## 2     1     3
+    ## 3     1     4
+    ## # ... with 42 more rows
+
+``` r
+g1 %>% plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+Here 2 notes are necessary:
+
+-   We gave an `id` to each node as the CURRENT row. This `id` is not
+    related stably to values in `from` and `to`, because these always
+    look for the current `row` of the row, not for a static `id`
+    attribute.
+-   `plot()` - as ugly as it is - is a very smart guy and it recognize
+    the attribute `color`!
+
+### How can we assign attributes to the links?
+
+Remember the weird wording `(active)`? For each `tidygraph` there is
+always an active part: the nodes or the edges.
+
+For assigning an attribute to the edges, we need to `activate` the
+`edges`.
+
+``` r
+set.seed(999)
+g1 %>% activate(edges) %>%
+  mutate(color = sample(
+    c("orange", "aquamarine"),
+    n(),
+    replace = T,
+    p=c(.5,.5)
+    )) -> g1
+g1
+```
+
+    ## # A tbl_graph: 10 nodes and 45 edges
+    ## #
+    ## # An undirected simple graph with 1 component
+    ## #
+    ## # Edge Data: 45 x 3 (active)
+    ##    from    to color     
+    ##   <int> <int> <chr>     
+    ## 1     1     2 aquamarine
+    ## 2     1     3 orange    
+    ## 3     1     4 aquamarine
+    ## 4     1     5 orange    
+    ## 5     1     6 orange    
+    ## 6     1     7 aquamarine
+    ## # ... with 39 more rows
+    ## #
+    ## # Node Data: 10 x 2
+    ##      id color
+    ##   <int> <chr>
+    ## 1     1 red  
+    ## 2     2 blue 
+    ## 3     3 red  
+    ## # ... with 7 more rows
+
+``` r
+g1 %>% plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 # The essence of Network Grafting:

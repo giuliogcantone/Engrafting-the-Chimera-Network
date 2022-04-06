@@ -17,17 +17,17 @@ In this guide I will install some useful packages through a package called `pacm
 
 ### Tidyverse is my basic syntax for data wrangling.
 
-```{r}
+```{r eval=FALSE}
 pacman::p_install("tidyverse")
 ```
 
 ### Tidygraph is a syntax for networks manipulation that is inspired by tidyverse. It is built on igraph, and some operations could still be performed on igraph.
 
-```{r}
+```{r eval=FALSE}
 pacman::p_install("igraph")
 ```
 
-```{r}
+```{r eval=FALSE}
 pacman::p_install("tidygraph")
 ```
 
@@ -48,6 +48,8 @@ In `igraph`, to construct a complete graph, you write this code:
 ```{r}
 igraph::make_full_graph(10, directed = FALSE) -> g1
 g1
+
+g1 %>% plot()
 ```
 ## Stochastic graphs have a random distributions of edges, following a model.
 
@@ -57,6 +59,8 @@ So, if you randomly generate them, you need to set a "seed" to see always the sa
 set.seed(999)
 igraph::random.graph.game(10, p.or.m = .2, directed = FALSE) -> g2
 g2
+
+g2 %>% plot()
 ```
 
 # If you, like me, don't like the igraph format, tidygraph will help you
@@ -65,6 +69,8 @@ Deterministic and random graph constructor are easy to recognize in `tidygraph` 
 
 ```{r}
 tidygraph::create_complete(10) -> g1
+g1
+
 g1
 ```
 while the random graphs are generated throug the verb `play_`:
@@ -87,6 +93,48 @@ However, the tibbles of the edges has already 2 attributes: `from` and `to`. The
 
 Don't you think that those nodes are a bit hard to recognize?
 
+Tidygraph makes very easy to manipulate attributes in networks:
+
+```{r}
+set.seed(999)
+g1 %>%
+  mutate(
+    id =
+      cur_group_rows(),
+    color = sample(
+    c("red", "blue"),
+    n(),
+    replace = T)
+    ) -> g1
+g1
+
+g1 %>% plot()
+```
+
+Here 2 notes are necessary:
+
+- We gave an `id` to each node as the CURRENT row. This `id` is not related stably to values in `from` and `to`, because these always look for the current `row` of the row, not for a static `id` attribute.
+- `plot()` - as ugly as it is - is a very smart guy and it recognize the attribute `color`!
+
+### How can we assign attributes to the links?
+
+Remember the weird wording `(active)`? For each `tidygraph` there is always an active part: the nodes or the edges.
+
+For assigning an attribute to the edges, we need to `activate` the `edges`.
+
+```{r}
+set.seed(999)
+g1 %>% activate(edges) %>%
+  mutate(color = sample(
+    c("orange", "aquamarine"),
+    n(),
+    replace = T,
+    p=c(.5,.5)
+    )) -> g1
+g1
+
+g1 %>% plot()
+```
 
 # The essence of Network Grafting:
 
