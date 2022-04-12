@@ -50,9 +50,9 @@ igraph::make_full_graph(10, directed = FALSE) -> g1
 g1
 ```
 
-    ## IGRAPH 91601df U--- 10 45 -- Full graph
+    ## IGRAPH f344491 U--- 10 45 -- Full graph
     ## + attr: name (g/c), loops (g/l)
-    ## + edges from 91601df:
+    ## + edges from f344491:
     ##  [1] 1-- 2 1-- 3 1-- 4 1-- 5 1-- 6 1-- 7 1-- 8 1-- 9 1--10 2-- 3 2-- 4 2-- 5
     ## [13] 2-- 6 2-- 7 2-- 8 2-- 9 2--10 3-- 4 3-- 5 3-- 6 3-- 7 3-- 8 3-- 9 3--10
     ## [25] 4-- 5 4-- 6 4-- 7 4-- 8 4-- 9 4--10 5-- 6 5-- 7 5-- 8 5-- 9 5--10 6-- 7
@@ -76,9 +76,9 @@ igraph::random.graph.game(10, p.or.m = .2, directed = FALSE) -> g2
 g2
 ```
 
-    ## IGRAPH 916845f U--- 10 10 -- Erdos renyi (gnp) graph
+    ## IGRAPH f34fbf2 U--- 10 10 -- Erdos renyi (gnp) graph
     ## + attr: name (g/c), type (g/c), loops (g/l), p (g/n)
-    ## + edges from 916845f:
+    ## + edges from f34fbf2:
     ##  [1] 3-- 4 5-- 7 1-- 9 2-- 9 3-- 9 5-- 9 8-- 9 2--10 7--10 9--10
 
 ``` r
