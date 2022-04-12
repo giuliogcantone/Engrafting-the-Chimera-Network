@@ -3,7 +3,6 @@ title: "How to make a Chimera Network"
 author: "Giulio G. Cantone"
 date: "5/4/2022"
 output: github_document
-dev: cairo_pdf
 ---
 
 This is a guide for the generating a network from a mixture of multi-layers, in R.
@@ -330,7 +329,7 @@ We want to model two features of smoking networks:
 
 To model these features, I coded this Mixing Matrix:
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 pacman::p_load(Matrix,superheat)
 
 gamma = .45
@@ -425,7 +424,8 @@ g %>% plot()
 
 In this case, we will swtich to a better graphical too, `ggraph`:
 
-```{r}
+```{r dev='CairoPNG'}
+
 library(ggraph)
 g %>% ggraph(layout = "stress") +
   geom_edge_link(aes(colour = color,
