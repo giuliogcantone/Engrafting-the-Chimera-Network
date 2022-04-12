@@ -1,19 +1,18 @@
 ---
-title: "README"
+title: "How to make a Chimera Network"
 author: "Giulio G. Cantone"
 date: "5/4/2022"
 output: github_document
+dev: cairo_pdf
 ---
 
-This is a guide for the generating a network from a mixture of multy-layers in R.
+This is a guide for the generating a network from a mixture of multi-layers, in R.
 
-# Why I need this in my life?
-
-Because...
+I used this code for [this article Snowball Sampling](https://arxiv.org/abs/2204.01887). You can find details of my code in the last section of this guide.
 
 ## Packages that needed to make the grafting to work
 
-In this guide I will install some useful packages through a package called `pacman`. If you already have these packages installed, you can ignore this section.
+In this guide I will install useful packages through a package called `pacman`. If you already have these packages installed, you can ignore this section.
 
 ### Tidyverse is my basic syntax for data wrangling.
 
@@ -32,10 +31,10 @@ pacman::p_install("tidygraph")
 ```
 
 ```{r echo=FALSE}
-pacman::p_load(tidyverse,tidygraph)
+pacman::p_load(tidyverse,tidygraph,igraph)
 ```
 
-# How to generate deterministic or stochastics graphs with igraph and tidygraph
+# Deterministic or stochastics graphs with igraph and tidygraph
 
 If you feel confident in this stuff, just jump to the next section.
 
@@ -82,11 +81,11 @@ tidygraph::play_erdos_renyi(10, p = .2, directed = FALSE) -> g2
 g2
 ```
 
-You can notice that now the format look like `tibble` from `tidyverse`. This is not a coincidence. This format allows to visualize the attributes of the networks as two relational tables.
+You can notice that now the format looks like `tibble` from `tidyverse`. This is not a coincidence. This format allows to visualize the attributes of the networks as two related tables.
 
 Have you noticed that `g1` and `g2` have no columns under the table of the nodes?
 
-One could be mislead to think that this means that those nodes does not exist! But they exists! They are the "invisible" row of the Node Data tibble. If you give a second sight you will see "10 x 0 (active)". This means that there are 10 nodes in the graph.
+One could be mislead to think that this means that those nodes does not exist! But they exists! They are the "invisible" row of the Node Data tibble. On a second sight, you will see `10 x 0 (active)`. This means that there are 10 nodes in the graph.
 
 However, the tibbles of the edges has already 2 attributes: `from` and `to`. These are very particular variables, because usually they cannot be `mutated`. We will learn how to correct manipulate these to engraft our Chimera Network! `from` and `to` also always point to the `rowID` of the nodes, and if `rowID` are re-shuffled, values in `from` and `to` will change to.
 
@@ -114,12 +113,12 @@ g1 %>% plot()
 
 Here 2 notes are necessary:
 
-- We gave an `id` to each node as the CURRENT row. This `id` is not related stably to values in `from` and `to`, because these always look for the current `row` of the row, not for a static `id` attribute.
+- We gave an `id` to each node as the CURRENT row. This `id` is not related stably to values in `from` and `to`, because these always look for the current `row` of the row, not for a static `id` attribute (or any other attribute in the columns).
 - `plot()` - as ugly as it is - is a very smart guy and it recognize the attribute `color`!
 
 ### How can we assign attributes to the links?
 
-Remember the weird wording `(active)`? For each `tidygraph` there is always an active part: the nodes or the edges.
+Remember the weird wording `(active)`? For each `tidygraph` there is always an active dataset: the nodes or the edges.
 
 For assigning an attribute to the edges, we need to `activate` the `edges`.
 
@@ -138,4 +137,310 @@ g1 %>% plot()
 ```
 
 # The essence of Network Grafting:
+
+The essence of network grafting lies in two operation:
+
+* Edge natural join
+* A mixing function for the nodes
+
+## Edge full-join
+
+We have two graphs with the same number of nodes: `g1` and `g2`.
+The edges from `g2` and all of their attributes are exported and copy-pasted into the dataset of edges `g1`.
+
+```{r}
+set.seed(999)
+
+create_star(10, directed = FALSE) %>%
+    mutate(
+    id = cur_group_rows(),
+    color1 = sample(
+      c("red", "blue"),
+      n(),
+      replace = T)
+    ) %>%
+  activate(edges) %>%
+  mutate(color = "orange") -> g1
+g1 %>% plot()
+
+play_erdos_renyi(10, p = .2, directed = FALSE) %>%
+      mutate(
+    id = cur_group_rows(),
+    color2 = sample(
+      c("red", "blue"),
+      n(),
+      replace = T)
+    ) %>%
+    activate(edges) %>%
+  mutate(color = "aquamarine")-> g2
+g2 %>% plot()
+
+g = tidygraph::graph_join(g1,g2) %>% to_undirected()
+g %>% plot
+
+g
+```
+
+`tidygraph::graph_join()`, for some reason, always produces a directed graph. If you want it undirected, I added `%>% to_undirected()`.
+
+## Mixing the attribute of the nodes
+
+Have you noticed that in these plots, the nodes of the graphs are not colored anymore? That's because I named the attributes `color1` and `color2` intead of `color`. The mixing function is for generating the definitive `color`.
+
+```{r}
+set.seed(999)
+g %>% activate(nodes) %>%
+  mutate(color = ifelse(color1 == color2,
+                        color1,
+                        "pink")) -> g
+g %>% plot()
+```
+
+In this case the mixing function works on a logical condition, but it could be useful to work with numerical attributes.
+
+## Example: Friends vs. Foe
+
+In this example, there will be 10 kids. Each dyad is mutual, but some kids are both friends and foes, would they be frenemies?
+
+Each kid has a level of stress, that depends positively from the number of foes, and negatively from the level of friends. Kids with many friends are less stressed. There are other factors that can randomly influence this value.
+
+
+```{r}
+set.seed(99)
+
+play_erdos_renyi(10, p = .4, directed = FALSE) %>%
+    mutate(
+    id = cur_group_rows(),
+    friends = local_size()
+    )%>%
+  activate(edges) %>%
+  mutate(color = "green") -> friends
+friends %>% plot()
+
+play_erdos_renyi(10, p = .4, directed = FALSE) %>%
+    mutate(
+    id = cur_group_rows(),
+    foes = local_size()
+    )%>%
+  activate(edges) %>%
+  mutate(color = "red") -> foes
+foes %>% plot()
+
+whole = tidygraph::graph_join(friends,foes) %>%
+  to_undirected() %>%
+  activate(nodes) %>%
+  mutate(stress = map2_dbl(friends,foes,~rbeta(1,foes+1,friends+1))
+         )
+
+whole
+```
+
+
+A `beta` function is employed to generate the random value.
+Why the `map2_dbl`? Well, if you proceed with a regular mutate without mapping the random-generative function, R would interpret it as the call is to repeat one random generated number for all the `rows` of the node dataset.
+
+Usually, there is a easier way than `map`, that is to employ `rowwise() %>%` before the `mutate`, but `tidygraph` do not understand `rowwise`, unfortunately.
+
+# How to generate a smokers' network
+
+This is the code that I employed for [generating a network of smokers in Hybrid Probabilistic-Snowball Sampling](https://arxiv.org/abs/2204.01887). I called this Chimera Network "Clique-and-block", because of the two collapsing layers:
+
+* one is a population of cliques, full connected within, and not connected between;
+* the other layer is randomly generated stochastic blockmodel
+
+
+## Cliques
+
+The underlying assumption behind this kind of network is that nodes are connected in cliques, representing their households. A household could be only one node - someone living alone.
+
+This is only the `g1` of the final network
+
+```{r}
+
+# Section 1
+n = 46
+
+tibble(k = rpois(n,1.2)+1,
+       clique = 1:n) -> g1
+
+# Section 2
+tibble(
+  w = .4,
+  clique = rep(g1$clique,g1$k)  %>% sample()) %>%
+  mutate(name = cur_group_rows()) %>%
+  group_by(clique) %>%
+  mutate(alpha = VGAM::rbetabinom(1,9,.225,.3),
+         alpha = (alpha/10) + .05) %>%
+  ungroup() -> g1
+
+#Section 3
+g1 %>% with(
+    .,
+    do.call(
+      rbind,
+      Map(
+        function(v) {
+          get.data.frame(
+            set_vertex_attr(
+              make_full_graph(length(v)),
+              name = "name", value = v
+            )
+          )
+        },
+        split(name, clique)
+      )
+    )
+  ) %>% tbl_graph(g1,.,directed = F) %>%
+  activate(edges) %>% mutate(color = "red") %>%
+  activate(nodes) %>% mutate(name = as.character(name)) %>%
+  arrange(name) -> g1
+
+g1
+```
+The code is divided in three sections:
+
+* Section 1 generates 100 `cliques`. Each clique has a size that is randomly draw from a shifted Poisson.
+* Section 2 generates `100*sizes` nodes that are fully connected within the cliques, and not connected across cliques. Each clique is associated to a `alpha` fixed within the clique. This `alpha` is a determinant to the propensity to smoke.
+* Section 3 generates exactly all the edges. These edges are colored of `red`. `name` is the `id` of the node. This code was 'gifted' to me from the author of `tidyverse`, [Thomas Pedersen](https://github.com/thomasp85).
+
+## Blockmodel
+
+Generating a blockmodel is a bit harder, but it can be made simple with a package from [[Alex Hayes and Karl Rohe](https://github.com/RoheLab/fastRG), `fastRG`.
+
+```{r eval=FALSE}
+pacman::p_load("fastRG")
+```
+
+Everything you have to know about random generation of a blockmodel of *beta*-blocks is that you need only 4 ingredients to make one:
+
+* Number of *nodes*... we got it from g1!
+* A *pi* vector of probabilities. Each element is the quota of nodes that will fall into the *beta*-block
+* A mixing matrix, that is the matrix with the probabilities that edges will connect two blocks (or, the same block)
+* A parameterisation for the expectation of the number of *edges* in the generated blockmodel. `fastRG` would set the default for a Poisson model, so it only need a parameter that will be the expected number. For example, if this number is set `5`, the average number of edges per node will be 5.
+
+### In a smoking networks, blocks represent the second determinant of smoking.
+
+We will assign some `beta` values to each block. The function of `beta` is analogues to the `alpha` in the cliques. Do you remember the function of `color1` and `color2`?
+So the higher is the `beta` of the block, the higher the propensity for the node to be a smoker, mediated by the value of `alpha` of its clique.
+
+We want to model two features of smoking networks:
+
+* They are homophile (or, assortative networks). This means that it's easier for a node in a block to be connected to a node to a block with a simular (or, identical) `beta`
+* Higher `beta`-blocks are less connected.
+
+To model these features, I coded this Mixing Matrix:
+
+```{r}
+pacman::p_load(Matrix,superheat)
+
+gamma = .45
+
+map_dfc(
+  seq(1,10,1),
+  function(.x) {
+    (dnorm(seq(1,10,1),.x,.x))}
+) |> as.matrix() |>
+  forceSymmetric(uplo = "U") |>
+  as.matrix() -> B
+
+B/sum(B) -> B
+(B^gamma / sum(B^gamma)) -> G
+
+colnames(G) <- (seq(.05,.95,.1))
+rownames(G) <- (seq(.05,.95,.1))
+
+G %>% superheat(
+  X.text = round(G, 3),
+  X.text.size = 3,
+  legend = FALSE,
+  X.text.col = "white")
+```
+
+Thanks to the useful package `superheat` we can visualize the mixing matrix that associates the frequence of nodes connecting a couple of two `beta`-blocks. This matrix is regulated through a `gamma` parameter. The higher the `gamma`, the higher will be the homophily in the network. According to my calibration, `gamma` should not exceed 1.
+
+### Now, we only need a pi-vector of probabilities for beta-blocks!
+
+Only for demonstrative purposes, without digging into precise tuning, we will pick a very easy parameterisation that `fastRG` will re-parameterize as probabilities:
+
+```{r}
+pi = (dbinom(0:9,9,.35))+0.02
+pi %>% round(3)
+```
+A consequence of this `pi` is that the probability to see nodes being assigned to higher `beta` is very small! So nodes in the tenth block are not only much less connected than others, they are very unlikely to be connected outside their cliques!
+
+But `beta` and `alpha` are the determinants of the smoking status, so if you think about these mechanics, you will see that this generate an interesting features of smoking networks: people with a very high propensity to be a smoker fall both in a high-`beta` block and in a clique with high `alpha`: these will be very isolated nodes, and likely connected with other people with high propensity to smoke!
+
+# Engraft the Smoking Chimera Network
+
+Now we have all the elements for the second layer of the Chimera, the blockmodel.
+
+`fastRG` works in a way that it will generate a latent model as a `R` object, than the command `sample_tidygraph` would generate the `tidygraph` graph. Before it, we will need to export the `block` variable into the Chimera network to assign the `beta` attribute.
+
+```{r}
+latent_sbm <- fastRG::sbm(
+  n = V(g1) %>% length(),
+  pi = pi,
+  B = G,
+  expected_degree = 5,
+  sort_nodes = T
+)
+
+g1 %>% activate(nodes) %>%
+  mutate(
+    beta = latent_sbm$z,
+    beta = abs((str_remove(beta,"block") %>%
+                  as.integer()) - 10)/10 + .05
+  ) -> g1
+
+g1
+
+g2 = fastRG::sample_tidygraph(latent_sbm) %>%
+  activate(edges) %>% mutate(color = "orange")
+```
+
+Now we have only to engraft the edges of `g2` into `g1`. Done this, we can generate a risk factor through a simple mixing function:
+
+$risk = \alpha*w + \beta*(1-w)$
+
+... that justificate the previous setup of a parameter `w`.
+
+```{r}
+g = graph_join(g1,g2) %>% to_undirected()
+
+
+g %>% activate(nodes) %>%
+  mutate(risk = alpha*w + beta*(1-w),
+         smoker = map_dbl(risk,~rbinom(1,1,.x)),
+         color = ifelse(smoker==1,"green","white")
+  ) -> g
+
+g
+
+g %>% plot()
+```
+
+
+
+### The plot is a mess!
+
+In this case, we will swtich to a better graphical too, `ggraph`:
+
+```{r}
+library(ggraph)
+g %>% ggraph(layout = "stress") +
+  geom_edge_link(aes(colour = color,
+                    width = color)) +
+  geom_node_point(aes(fill = color),
+                  size = 7, shape = 21, stroke = 1, color = 'black') +
+  scale_fill_manual(values = c("white" = "white",
+                               "green" = "forestgreen")) +
+  scale_edge_color_manual(values = c("red" = "red",
+                                     "orange" = "orange"))+
+  geom_node_text(aes(label = name))+
+  scale_edge_width_manual(values = c(
+    "red" = 1,
+    "orange" = .5)) +
+  theme_void() +
+  theme(legend.position="none") 
+```
 
